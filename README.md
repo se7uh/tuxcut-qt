@@ -1,24 +1,97 @@
-## TuxCut 
-A utility that protect linux computers againest arpspoof attacks
+# TuxCut Qt
 
-## Features:
-- Hide your machine (ip/MAC) from arp scanner utilities.
-- list all the live host in your LAN.
-- cut the connection between any live host and the gateway.
-- use wondershaper to control your upload or download speed limits.
+<p align="center">
+  <img src="tuxcut.png" alt="TuxCut Qt Logo" width="200"/>
+</p>
 
-## Screenshot
-#### 6.1
-![selection_001](https://user-images.githubusercontent.com/536140/30778321-344ce456-a0d3-11e7-81c3-e7bcbd28a88d.png)
+TuxCut Qt is a network management tool that allows you to:
+- View all devices on your network
+- Control network access for devices
+- Change MAC address
+- Manage device aliases
 
-## Install
-Get your package from [Download](https://github.com/a-atalla/tuxcut/releases) section
+## Preview
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9f16e1cd-912d-4e3c-bded-d642f7729ba3" alt="TuxCut Qt Preview" width="800"/>
+</p>
 
-# Run from source
-- create virtualenv `python3 -m venv env_name`.
-- activate the environment `source env_name/bin/activate`.
-- Get [WxPython](https://extras.wxpython.org/wxPython4/extras/linux/gtk3/) and install it inside the active venv `pip install wxPython-4.xxxxx.whl`
-- install the rest of python packages `pip install -r requirements.txt`.
-- run the server with root priviliages `sudo env_name/bin/python3 server/tuxcutd.py`.
-- run the gui `env_name/bin/python3 client/tuxcut.py`.
-- To build packages you need to install [FPM](https://github.com/jordansissel/fpm)  then run the script `build.sh`
+## Features
+- Modern Qt6 interface
+- Python 3.10+ support
+- Easy to use network management
+- Device aliasing support
+- MAC address spoofing
+- Network protection mode
+
+## Requirements
+- Python 3.10 or higher
+- Root/sudo privileges
+- Linux system with NetworkManager
+
+## Installation
+
+### From Packages
+Download the latest RPM or DEB package from the [Releases](https://github.com/se7uh/tuxcut-qt/releases) page.
+
+For RPM-based distributions (Fedora, RHEL, etc.):
+```bash
+sudo rpm -i tuxcut-qt-*.rpm
+```
+
+For DEB-based distributions (Ubuntu, Debian, etc.):
+```bash
+sudo dpkg -i tuxcut-qt-*.deb
+```
+
+### From Source
+1. Clone the repository:
+```bash
+git clone https://github.com/se7uh/tuxcut-qt
+cd tuxcut-qt
+```
+
+2. Create and activate virtual environment:
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+4. Run the application:
+```bash
+sudo .venv/bin/python client/tuxcut_qt.py
+```
+
+### Build RPM/DEB Package
+You can build RPM or DEB packages using the build script:
+
+```bash
+./build.sh rpm  # For RPM package
+./build.sh deb  # For DEB package
+```
+
+The built packages will be available in the `dist` directory.
+
+## Usage
+1. Launch TuxCut Qt with root privileges
+2. The application will scan your network and display connected devices
+3. Select a device from the list to:
+   - Cut its network access
+   - Resume its network access
+   - Give it an alias
+   - Change its MAC address
+4. Use the protection mode to prevent others from cutting your connection
+
+## Contributing
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+This project is licensed under GPL v3 - see the LICENSE file for details.
+
+## Authors
+- Original author: a-talla
+- Qt port: se7uh

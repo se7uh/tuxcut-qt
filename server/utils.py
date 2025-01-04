@@ -52,31 +52,43 @@ def get_default_gw():
     """
     Get the default gw ip address with the iface
     """
-
-    # netifaces.AF_INET = 2
     gw = dict()
-    if netifaces.AF_INET in netifaces.gateways()['default']:
-        default_gw = netifaces.gateways()['default'][netifaces.AF_INET]
-
-        # initialize gw_mac with empty string
-        gw_mac = ''
-
-        # send arp packet to gw to get the MAC Address of the router
-        try:
-            results, unanswered = sr(ARP(op=ARP.who_has, psrc='8.8.8.8', pdst=default_gw[0]))
-            for r in results[0]:
-                if r.psrc == default_gw[0]:
-                    gw_mac = r.hwsrc
-
-            gw['ip'] = default_gw[0]
-            gw['mac'] = gw_mac
-            gw['hostname'] = get_hostname(default_gw[0])
-            gw['iface'] = default_gw[1]
-
-            logger.info('gw successfully retrieved')
-        except Exception as e:
-            logger.error(sys.exc_info()[1], exc_info=True)
-
+    try:
+        if netifaces.AF_INET in netifaces.gateways()['default']:
+            default_gw = netifaces.gateways()['default'][netifaces.AF_INET]
+            
+            # initialize gw_mac with empty string
+            gw_mac = ''
+            
+            # send arp packet to gw to get the MAC Address of the router
+            try:
+                # Use ARP operation code 1 for "who-has" (ARP request)
+                # Set timeout to 2 seconds and verbose to 0 to suppress output
+                results, unanswered = sr(ARP(op=1, psrc=get_if_addr(default_gw[1]), pdst=default_gw[0]), 
+                                       timeout=2, verbose=0)
+                
+                if results:
+                    for s,r in results:
+                        if r.psrc == default_gw[0]:
+                            gw_mac = r.hwsrc
+                            break
+                
+                gw['ip'] = default_gw[0]
+                gw['mac'] = gw_mac
+                gw['hostname'] = get_hostname(default_gw[0])
+                gw['iface'] = default_gw[1]
+                
+                if not gw_mac:
+                    logger.info('Could not get gateway MAC address')
+                else:
+                    logger.info('Gateway information retrieved successfully')
+            except Exception as e:
+                logger.error(f"Error getting gateway MAC: {str(e)}")
+        else:
+            logger.error("No default gateway found")
+    except Exception as e:
+        logger.error(f"Error in get_default_gw: {str(e)}")
+    
     return gw
 
 
