@@ -1,6 +1,6 @@
 APP_NAME = "TuxCut Qt"
 APP_VERSION = "7.0"
-APP_AUTHOR = "a-talla"
+APP_AUTHOR = "a-atalla"
 APP_PORTER = "se7uh"
 APP_LICENSE = "GPL v3"
 APP_REPO = "https://github.com/se7uh/tuxcut-qt"

@@ -93,5 +93,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 This project is licensed under GPL v3 - see the LICENSE file for details.
 
 ## Authors
-- Original author: a-talla
+- Original author: a-atalla
 - Qt port: se7uh
