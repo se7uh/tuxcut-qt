@@ -1,9 +1,17 @@
 name: Build and Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g. 7.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Is this a pre-release?'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -23,6 +31,13 @@ jobs:
           sudo apt-get install -y rpm ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
       
+      - name: Update version
+        run: |
+          # Update version in build.sh
+          sed -i "s/VERSION=.*/VERSION=\"${{ github.event.inputs.version }}\"/" build.sh
+          # Update version in config.py
+          sed -i "s/APP_VERSION = .*/APP_VERSION = \"${{ github.event.inputs.version }}\"/" client/config.py
+      
       - name: Build RPM package
         run: |
           chmod +x build.sh
@@ -40,7 +55,8 @@ jobs:
             dist/*.rpm
             dist/*.deb
           draft: false
-          prerelease: false
+          prerelease: ${{ github.event.inputs.prerelease }}
           generate_release_notes: true
+          tag_name: v${{ github.event.inputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
