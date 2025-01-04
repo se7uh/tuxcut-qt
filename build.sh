@@ -43,7 +43,6 @@ mkdir -p "$STAGING/$BIN_DIR"
 
 # Copy files
 cp -r client server requirements.txt tuxcut.png "$STAGING/$INSTALL_DIR/"
-cp -r .venv "$STAGING/$INSTALL_DIR/"
 
 # Create launcher script
 cat > "$STAGING/$BIN_DIR/tuxcut-qt" << 'EOF'
@@ -87,13 +86,23 @@ build_package() {
 mkdir -p scripts
 cat > scripts/postinst << 'EOF'
 #!/bin/bash
+
+# Create virtual environment
+cd /opt/tuxcut-qt
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Set permissions
 chmod +x /usr/bin/tuxcut-qt
+chmod -R a+r /opt/tuxcut-qt
 EOF
 
 # Create pre-remove script
 cat > scripts/prerm << 'EOF'
 #!/bin/bash
 rm -f /usr/bin/tuxcut-qt
+rm -rf /opt/tuxcut-qt/.venv
 EOF
 
 chmod +x scripts/postinst scripts/prerm
