@@ -41,13 +41,20 @@ STAGING="$(mktemp -d)"
 mkdir -p "$STAGING/$INSTALL_DIR"
 mkdir -p "$STAGING/$BIN_DIR"
 
-# Copy files
-cp -r client server requirements.txt tuxcut.png "$STAGING/$INSTALL_DIR/"
+# Build executables with PyInstaller
+echo "Building executables..."
+pyinstaller --clean -F client/tuxcut_qt.py
+pyinstaller --clean -F server/server.py
+
+# Copy files to staging
+cp dist/tuxcut_qt "$STAGING/$INSTALL_DIR/"
+cp dist/server "$STAGING/$INSTALL_DIR/"
+cp tuxcut.png "$STAGING/$INSTALL_DIR/"
 
 # Create launcher script
 cat > "$STAGING/$BIN_DIR/tuxcut-qt" << 'EOF'
 #!/bin/bash
-sudo /opt/tuxcut-qt/.venv/bin/python /opt/tuxcut-qt/client/tuxcut_qt.py
+sudo /opt/tuxcut-qt/tuxcut_qt
 EOF
 chmod +x "$STAGING/$BIN_DIR/tuxcut-qt"
 
@@ -55,7 +62,6 @@ chmod +x "$STAGING/$BIN_DIR/tuxcut-qt"
 build_package() {
     local TYPE=$1
     local ARCH="x86_64"
-    local DEPS="python3 >= 3.10"
     
     echo "Building $TYPE package..."
     
@@ -66,7 +72,6 @@ build_package() {
         --url "$URL" \
         --maintainer "$MAINTAINER" \
         --license "$LICENSE" \
-        --depends "$DEPS" \
         -a $ARCH \
         -C "$STAGING" \
         --after-install "scripts/postinst" \
@@ -86,23 +91,15 @@ build_package() {
 mkdir -p scripts
 cat > scripts/postinst << 'EOF'
 #!/bin/bash
-
-# Create virtual environment
-cd /opt/tuxcut-qt
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-
-# Set permissions
 chmod +x /usr/bin/tuxcut-qt
-chmod -R a+r /opt/tuxcut-qt
+chmod +x /opt/tuxcut-qt/tuxcut_qt
+chmod +x /opt/tuxcut-qt/server
 EOF
 
 # Create pre-remove script
 cat > scripts/prerm << 'EOF'
 #!/bin/bash
 rm -f /usr/bin/tuxcut-qt
-rm -rf /opt/tuxcut-qt/.venv
 EOF
 
 chmod +x scripts/postinst scripts/prerm
@@ -124,5 +121,7 @@ esac
 # Cleanup
 rm -rf "$STAGING"
 rm -rf scripts
+rm -rf build
+rm -rf *.spec
 
 echo "Done! Package is available in the dist directory."

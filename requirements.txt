@@ -8,3 +8,4 @@ pylint>=3.0.0
 pytz>=2023.3
 tzlocal>=5.0.1
 bottle>=0.12.25
+pyinstaller>=6.11.1
