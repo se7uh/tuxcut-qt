@@ -12,7 +12,7 @@ TuxCut Qt is a network management tool that allows you to:
 
 ## Preview
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/9f16e1cd-912d-4e3c-bded-d642f7729ba3" alt="TuxCut Qt Preview" width="800"/>
+  <img src="https://github.com/user-attachments/assets/08e8e631-e7a9-4a65-8ac6-f18844ea92cc" alt="TuxCut Qt Preview" width="800"/>
 </p>
 
 ## Features
