@@ -38,12 +38,14 @@ class ServerThread(Thread):
     
     def run(self):
         try:
-            server_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'server', 'server.py')
-            python_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.venv', 'bin', 'python')
+            server_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'server', 'server')
+            if not os.path.exists(server_path):
+                # Jika tidak ada di development path, coba cari di installation path
+                server_path = '/opt/tuxcut-qt/server'
             
-            # Jalankan server dengan output ke terminal
+            # Jalankan server executable
             self.process = subprocess.Popen(
-                [python_path, server_path],
+                [server_path],
                 stdout=sys.stdout,
                 stderr=sys.stderr,
                 bufsize=1,
