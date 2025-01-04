@@ -43,14 +43,7 @@ mkdir -p "$STAGING/$BIN_DIR"
 
 # Build executables with PyInstaller
 echo "Building executables..."
-pyinstaller --clean -F \
-    --add-data "tuxcut.png:." \
-    --hidden-import PyQt6.QtCore \
-    --hidden-import PyQt6.QtGui \
-    --hidden-import PyQt6.QtWidgets \
-    --collect-all PyQt6 \
-    client/tuxcut_qt.py
-
+pyinstaller --clean -F client/tuxcut_qt.py
 pyinstaller --clean -F server/server.py
 
 # Copy files to staging
@@ -69,23 +62,8 @@ chmod +x "$STAGING/$BIN_DIR/tuxcut-qt"
 build_package() {
     local TYPE=$1
     local ARCH="x86_64"
-    local DEPS=(
-        "libxcb-icccm4" "libxcb-image0" "libxcb-keysyms1" "libxcb-randr0"
-        "libxcb-render-util0" "libxcb-xinerama0" "libxcb-xkb1" "libxkbcommon-x11-0"
-        "libxcb-shape0" "libxcb-cursor0"
-    )
     
     echo "Building $TYPE package..."
-    
-    # Convert dependencies format based on package type
-    local DEP_ARGS=""
-    for dep in "${DEPS[@]}"; do
-        if [ "$TYPE" = "rpm" ]; then
-            # Convert debian package names to fedora equivalents
-            dep=$(echo $dep | sed 's/lib\(.*\)[0-9]$/lib\1/')
-        fi
-        DEP_ARGS="$DEP_ARGS --depends $dep"
-    done
     
     fpm -s dir -t $TYPE \
         -n "tuxcut-qt" \
@@ -95,7 +73,6 @@ build_package() {
         --maintainer "$MAINTAINER" \
         --license "$LICENSE" \
         -a $ARCH \
-        $DEP_ARGS \
         -C "$STAGING" \
         --after-install "scripts/postinst" \
         --before-remove "scripts/prerm" \
