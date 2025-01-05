@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://se7uh.github.io/tuxcut-qt/sitemap.xml 
