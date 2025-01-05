@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Primary Meta Tags -->
-    <title>TuxCut Qt - Modern Network Management Tool for Linux</title>
-    <meta name="title" content="TuxCut Qt - Modern Network Management Tool for Linux">
-    <meta name="description" content="Control your network, manage devices, and protect your Linux computer with TuxCut Qt. Features MAC spoofing, device control, and network protection.">
-    <meta name="keywords" content="TuxCut Qt, network management, Linux, MAC spoofing, network protection, device control, Qt6, network security">
+    <title>TuxCut Qt - WiFi Access Control Tool for Linux</title>
+    <meta name="title" content="TuxCut Qt - WiFi Access Control Tool for Linux">
+    <meta name="description" content="Cut or resume WiFi access for any device on your network. Simple and powerful tool for Linux with modern Qt interface.">
+    <meta name="keywords" content="TuxCut Qt, WiFi control, network access, Linux, cut WiFi, resume WiFi, Qt6, network security">
     <meta name="author" content="se7uh">
     
     <!-- Open Graph / Facebook -->
@@ -33,6 +33,83 @@
     
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --card-bg: #2d2d2d;
+            --code-bg: #1a1a1a;
+        }
+        
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7fafc;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --card-bg: #ffffff;
+            --code-bg: #f1f5f9;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        .bg-theme-secondary {
+            background-color: var(--bg-secondary);
+        }
+        
+        .text-theme-secondary {
+            color: var(--text-secondary);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--text-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .code-block {
+            position: relative;
+            background-color: var(--code-bg);
+            border: 1px solid var(--text-secondary);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .copy-button {
+            position: absolute;
+            right: 0.5rem;
+            top: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            background-color: var(--bg-primary);
+            border: 1px solid var(--text-secondary);
+            border-radius: 0.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-button:hover {
+            color: var(--text-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        .copy-button.copied {
+            color: #10B981;
+            border-color: #10B981;
+        }
+    </style>
     
     <!-- Schema.org markup -->
     <script type="application/ld+json">
@@ -57,104 +134,180 @@
     }
     </script>
 </head>
-<body class="bg-gray-100">
-    <!-- Hero Section -->
-    <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
-        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center">
-                <img src="tuxcut.png" alt="TuxCut Qt Logo" class="h-12 w-12 mr-4">
-                <span class="text-2xl font-bold">TuxCut Qt</span>
+<body>
+    <!-- Navbar -->
+    <nav class="sticky top-0 bg-theme-secondary shadow-lg z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <img src="tuxcut.png" alt="TuxCut Qt Logo" class="h-8 w-8">
+                    <span class="ml-3 text-xl font-bold">TuxCut Qt</span>
+                </div>
+                <div class="flex items-center space-x-8">
+                    <a href="#features" class="hover:text-blue-500 transition-colors">Features</a>
+                    <a href="#installation" class="hover:text-blue-500 transition-colors">Installation</a>
+                    <a href="#about" class="hover:text-blue-500 transition-colors">About</a>
+                    <a href="https://github.com/se7uh/tuxcut-qt" class="hover:text-blue-500 transition-colors">GitHub</a>
+                    <button id="themeToggle" class="p-2 rounded-lg hover:bg-opacity-80 transition-colors">
+                        <svg class="w-5 h-5 theme-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                        <svg class="w-5 h-5 theme-dark hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
-            <div class="flex space-x-6">
-                <a href="#features" class="hover:text-blue-200">Features</a>
-                <a href="#installation" class="hover:text-blue-200">Installation</a>
-                <a href="#about" class="hover:text-blue-200">About</a>
-                <a href="https://github.com/se7uh/tuxcut-qt" class="hover:text-blue-200">GitHub</a>
-            </div>
-        </nav>
-        <div class="container mx-auto px-6 py-20">
-            <h1 class="text-5xl font-bold mb-4">Network Management Made Easy</h1>
-            <p class="text-xl mb-8">Control your network, manage devices, and protect your computer with a modern Qt interface.</p>
-            <a href="#installation" class="bg-white text-blue-800 px-6 py-3 rounded-lg font-semibold hover:bg-blue-100 transition">Get Started</a>
         </div>
-    </header>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+            <div class="text-center">
+                <h1 class="text-4xl sm:text-5xl font-bold mb-6">Control WiFi Access on Your Network</h1>
+                <p class="text-xl mb-8 text-blue-100">Cut or resume WiFi access for any device on your network. Simple, powerful, and modern Qt interface.</p>
+                <div class="flex justify-center gap-4">
+                    <a href="#installation" class="bg-white text-blue-800 px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors">
+                        Get Started
+                    </a>
+                    <a href="https://github.com/se7uh/tuxcut-qt/releases/latest" class="bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors">
+                        Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Preview Section -->
-    <section class="py-20">
-        <div class="container mx-auto px-6">
-            <img src="https://github.com/user-attachments/assets/9f16e1cd-912d-4e3c-bded-d642f7729ba3" alt="TuxCut Qt Preview" class="rounded-lg shadow-xl w-full">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="bg-theme-secondary rounded-xl shadow-lg overflow-hidden">
+            <img src="https://github.com/user-attachments/assets/08e8e631-e7a9-4a65-8ac6-f18844ea92cc" 
+                 alt="TuxCut Qt Preview" 
+                 class="w-full"
+                 loading="lazy">
         </div>
-    </section>
+    </div>
 
     <!-- Features Section -->
-    <section id="features" class="py-20 bg-white">
-        <div class="container mx-auto px-6">
-            <h2 class="text-4xl font-bold text-center mb-12">Features</h2>
+    <div id="features" class="bg-theme-secondary py-16">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-12">Features</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="p-6 border rounded-lg">
+                <div class="card p-6 rounded-xl">
                     <h3 class="text-xl font-semibold mb-4">Network Management</h3>
-                    <p>View and control all devices on your network with an intuitive interface.</p>
+                    <p class="text-theme-secondary">View and control all devices on your network with an intuitive interface.</p>
                 </div>
-                <div class="p-6 border rounded-lg">
+                <div class="card p-6 rounded-xl">
                     <h3 class="text-xl font-semibold mb-4">Device Control</h3>
-                    <p>Cut and resume network access for any device on your network.</p>
+                    <p class="text-theme-secondary">Cut and resume network access for any device on your network.</p>
                 </div>
-                <div class="p-6 border rounded-lg">
+                <div class="card p-6 rounded-xl">
                     <h3 class="text-xl font-semibold mb-4">MAC Spoofing</h3>
-                    <p>Change your MAC address easily for enhanced privacy.</p>
+                    <p class="text-theme-secondary">Change your MAC address easily for enhanced privacy.</p>
                 </div>
-                <div class="p-6 border rounded-lg">
+                <div class="card p-6 rounded-xl">
                     <h3 class="text-xl font-semibold mb-4">Device Aliasing</h3>
-                    <p>Give friendly names to devices for easier identification.</p>
+                    <p class="text-theme-secondary">Give friendly names to devices for easier identification.</p>
                 </div>
-                <div class="p-6 border rounded-lg">
+                <div class="card p-6 rounded-xl">
                     <h3 class="text-xl font-semibold mb-4">Protection Mode</h3>
-                    <p>Prevent others from cutting your connection.</p>
+                    <p class="text-theme-secondary">Prevent others from cutting your connection.</p>
                 </div>
-                <div class="p-6 border rounded-lg">
+                <div class="card p-6 rounded-xl">
                     <h3 class="text-xl font-semibold mb-4">Modern Interface</h3>
-                    <p>Built with Qt6 for a sleek and responsive experience.</p>
+                    <p class="text-theme-secondary">Built with Qt6 for a sleek and responsive experience.</p>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- Installation Section -->
-    <section id="installation" class="py-20">
-        <div class="container mx-auto px-6">
-            <h2 class="text-4xl font-bold text-center mb-12">Installation</h2>
+    <div id="installation" class="py-16">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-12">Installation</h2>
             <div class="max-w-3xl mx-auto space-y-8">
                 <div>
                     <h3 class="text-2xl font-semibold mb-4">From Packages</h3>
-                    <div class="bg-gray-800 text-white p-6 rounded-lg">
+                    <div class="mb-4">
+                        <a href="https://github.com/se7uh/tuxcut-qt/releases/latest" 
+                           class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition mb-4">
+                           Download Latest Release
+                        </a>
+                    </div>
+                    <div class="card p-6 rounded-lg">
                         <p class="mb-4">For RPM-based distributions (Fedora, RHEL):</p>
-                        <code class="block bg-gray-900 p-4 rounded">sudo rpm -i tuxcut-qt-*.rpm</code>
-                        <p class="mt-4 mb-4">For DEB-based distributions (Ubuntu, Debian):</p>
-                        <code class="block bg-gray-900 p-4 rounded">sudo dpkg -i tuxcut-qt-*.deb</code>
+                        <div class="code-block">
+                            <code class="block">sudo dnf install ./tuxcut-qt-*.rpm</code>
+                            <button class="copy-button">Copy</button>
+                        </div>
+                        
+                        <p class="mt-6 mb-4">For DEB-based distributions (Ubuntu, Debian):</p>
+                        <div class="code-block">
+                            <code class="block">sudo apt install ./tuxcut-qt-*.deb</code>
+                            <button class="copy-button">Copy</button>
+                        </div>
                     </div>
                 </div>
                 <div>
                     <h3 class="text-2xl font-semibold mb-4">From Source</h3>
-                    <div class="bg-gray-800 text-white p-6 rounded-lg">
-                        <code class="block bg-gray-900 p-4 rounded mb-4">git clone https://github.com/se7uh/tuxcut-qt
+                    <div class="card p-6 rounded-lg space-y-6">
+                        <div>
+                            <p class="mb-2">1. Clone the repository:</p>
+                            <div class="code-block">
+                                <code class="block">git clone https://github.com/se7uh/tuxcut-qt
 cd tuxcut-qt</code>
-                        <code class="block bg-gray-900 p-4 rounded mb-4">python -m venv .venv
-source .venv/bin/activate</code>
-                        <code class="block bg-gray-900 p-4 rounded mb-4">pip install -r requirements.txt</code>
-                        <code class="block bg-gray-900 p-4 rounded">sudo .venv/bin/python client/tuxcut_qt.py</code>
+                                <button class="copy-button">Copy</button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <p class="mb-2">2. Install Python virtual environment:</p>
+                            <div class="code-block">
+                                <code class="block">sudo dnf install python3-virtualenv  # Fedora<br><br>
+# or<br><br>
+sudo apt install python3-venv     # Ubuntu/Debian</code>
+                                <button class="copy-button">Copy</button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <p class="mb-2">3. Create and activate virtual environment:</p>
+                            <div class="code-block">
+                                <code class="block">python3 -m venv .venv
+. .venv/bin/activate</code>
+                                <button class="copy-button">Copy</button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <p class="mb-2">4. Install dependencies:</p>
+                            <div class="code-block">
+                                <code class="block">pip install -r requirements.txt</code>
+                                <button class="copy-button">Copy</button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <p class="mb-2">5. Run the application:</p>
+                            <div class="code-block">
+                                <code class="block">sudo .venv/bin/python client/tuxcut_qt.py</code>
+                                <button class="copy-button">Copy</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- About Section -->
-    <section id="about" class="py-20 bg-white">
-        <div class="container mx-auto px-6">
-            <h2 class="text-4xl font-bold text-center mb-12">About</h2>
+    <div id="about" class="bg-theme-secondary py-16">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-center mb-12">About</h2>
             <div class="max-w-3xl mx-auto text-center">
-                <p class="mb-8">TuxCut Qt is a modern network management tool for Linux systems. It provides an intuitive interface for controlling network access, managing devices, and protecting your computer.</p>
-                <div class="space-y-4">
+                <p class="mb-8 text-theme-secondary">TuxCut Qt is a modern network management tool for Linux systems. It provides an intuitive interface for controlling network access, managing devices, and protecting your computer.</p>
+                <div class="space-y-4 text-theme-secondary">
                     <p><strong>Version:</strong> 7.0</p>
                     <p><strong>Original Author:</strong> a-atalla</p>
                     <p><strong>Qt Port:</strong> se7uh</p>
@@ -163,19 +316,77 @@ source .venv/bin/activate</code>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-12">
-        <div class="container mx-auto px-6 text-center">
-            <p class="mb-4">© 2023 TuxCut Qt. Licensed under GPL v3.</p>
-            <div class="flex justify-center space-x-6">
-                <a href="https://github.com/se7uh/tuxcut-qt" class="hover:text-blue-400">GitHub</a>
-                <a href="#features" class="hover:text-blue-400">Features</a>
-                <a href="#installation" class="hover:text-blue-400">Installation</a>
-                <a href="#about" class="hover:text-blue-400">About</a>
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="mb-4">© <script>document.write(new Date().getFullYear())</script> TuxCut Qt. Licensed under GPL v3.</p>
+            <div class="flex justify-center space-x-8">
+                <a href="https://github.com/se7uh/tuxcut-qt" class="hover:text-blue-400 transition-colors">GitHub</a>
+                <a href="#features" class="hover:text-blue-400 transition-colors">Features</a>
+                <a href="#installation" class="hover:text-blue-400 transition-colors">Installation</a>
+                <a href="#about" class="hover:text-blue-400 transition-colors">About</a>
             </div>
         </div>
     </footer>
+
+    <script>
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        const lightIcon = themeToggle.querySelector('.theme-light');
+        const darkIcon = themeToggle.querySelector('.theme-dark');
+        
+        // Set initial theme
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // Toggle icons
+            if (theme === 'dark') {
+                lightIcon.classList.add('hidden');
+                darkIcon.classList.remove('hidden');
+            } else {
+                lightIcon.classList.remove('hidden');
+                darkIcon.classList.add('hidden');
+            }
+        }
+        
+        // Check for saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('theme') || 
+                          (prefersDarkScheme.matches ? 'dark' : 'light');
+        setTheme(savedTheme);
+        
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+        });
+        
+        // Listen for system theme changes
+        prefersDarkScheme.addListener((e) => {
+            if (!localStorage.getItem('theme')) {
+                setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+        
+        // Copy button functionality
+        document.querySelectorAll('.copy-button').forEach(button => {
+            button.addEventListener('click', () => {
+                const code = button.previousElementSibling.textContent;
+                navigator.clipboard.writeText(code);
+                
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        });
+    </script>
 </body>
 </html> 
