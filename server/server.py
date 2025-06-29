@@ -3,9 +3,8 @@ import json
 import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from utils import *
-import os
 
-# Setup logging untuk terminal
+# Setup loggincg untuk terminal
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

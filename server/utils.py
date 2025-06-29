@@ -1,10 +1,14 @@
 import os
 from pathlib import Path
 import sys
-import subprocess as sp
 import logging
+import socket
+import struct
+import random
 from scapy.all import *
-import netifaces
+import psutil
+import dns.resolver
+import dns.reversename
 
 
 LOG_DIR = '/var/log/tuxcut'
@@ -23,29 +27,19 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 
-# def get_ifaces():
-#     """
-#     all the available network interfaces except  'lo'
-#     """
-#     ifaces = netifaces.interfaces()
-#     if 'lo' in ifaces:
-#         ifaces.remove('lo')
-#     return ifaces
-
-
 def get_hostname(ip):
     """
-    use nslookup from dnsutils package to get hostname for an ip
+    Use dnspython to get the hostname for an IP address.
     """
     try:
-        ans = sp.Popen(['nslookup', ip], stdout=sp.PIPE)
-        for line in ans.stdout:
-            line = line.decode('utf-8')
-            if 'name = ' in line:
-                return line.split(' ')[-1].strip('.\n')
+        rev_name = dns.reversename.from_address(ip)
+        answer = dns.resolver.resolve(rev_name, "PTR")
+        return str(answer[0]).rstrip('.')
+    except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer):
+        return ''
     except Exception as e:
-        logger.error(sys.exc_info()[1], exc_info=True)
-    return ''
+        logger.error(f"Error resolving hostname for {ip}: {e}", exc_info=True)
+        return ''
 
 
 def get_default_gw():
@@ -54,38 +48,42 @@ def get_default_gw():
     """
     gw = dict()
     try:
-        if netifaces.AF_INET in netifaces.gateways()['default']:
-            default_gw = netifaces.gateways()['default'][netifaces.AF_INET]
-            
-            # initialize gw_mac with empty string
-            gw_mac = ''
-            
-            # send arp packet to gw to get the MAC Address of the router
-            try:
-                # Use ARP operation code 1 for "who-has" (ARP request)
-                # Set timeout to 2 seconds and verbose to 0 to suppress output
-                results, unanswered = sr(ARP(op=1, psrc=get_if_addr(default_gw[1]), pdst=default_gw[0]), 
-                                       timeout=2, verbose=0)
-                
-                if results:
-                    for s,r in results:
-                        if r.psrc == default_gw[0]:
-                            gw_mac = r.hwsrc
-                            break
-                
-                gw['ip'] = default_gw[0]
-                gw['mac'] = gw_mac
-                gw['hostname'] = get_hostname(default_gw[0])
-                gw['iface'] = default_gw[1]
-                
-                if not gw_mac:
-                    logger.info('Could not get gateway MAC address')
-                else:
-                    logger.info('Gateway information retrieved successfully')
-            except Exception as e:
-                logger.error(f"Error getting gateway MAC: {str(e)}")
-        else:
-            logger.error("No default gateway found")
+        gws = psutil.net_if_addrs()
+        for iface, addrs in gws.items():
+            for addr in addrs:
+                if addr.family == psutil.AF_LINK:
+                    # This is a MAC address, but we need the gateway IP first
+                    pass
+
+        # Using psutil's net_if_gateways is not straightforward.
+        # Let's stick to a method that is more reliable for finding the default gateway.
+        with open("/proc/net/route") as f:
+            for line in f:
+                fields = line.strip().split()
+                if fields[1] == '00000000':
+                    gw_ip = socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
+                    iface = fields[0]
+                    
+                    # Get MAC of gateway
+                    gw_mac = ''
+                    results, unanswered = sr(ARP(op=1, psrc=get_if_addr(iface), pdst=gw_ip),
+                                           timeout=2, verbose=0)
+                    if results:
+                        for s, r in results:
+                            if r.psrc == gw_ip:
+                                gw_mac = r.hwsrc
+                                break
+
+                    gw['ip'] = gw_ip
+                    gw['mac'] = gw_mac
+                    gw['hostname'] = get_hostname(gw_ip)
+                    gw['iface'] = iface
+                    
+                    if not gw_mac:
+                        logger.info('Could not get gateway MAC address')
+                    else:
+                        logger.info('Gateway information retrieved successfully')
+                    return gw
     except Exception as e:
         logger.error(f"Error in get_default_gw: {str(e)}")
     
@@ -98,9 +96,13 @@ def get_my(iface):
     """
     my = dict()
     try:
-        my['ip'] = get_if_addr(iface)
-        my['mac'] = get_if_hwaddr(iface)
-        my['hostname'] = get_hostname(get_if_addr(iface))
+        addrs = psutil.net_if_addrs()[iface]
+        for addr in addrs:
+            if addr.family == socket.AF_INET:
+                my['ip'] = addr.address
+            if addr.family == psutil.AF_LINK:
+                my['mac'] = addr.address
+        my['hostname'] = get_hostname(my['ip'])
         logger.info('My info succssfully retrieved')
     except Exception as e:
         logger.error(sys.exc_info()[1], exc_info=True)
@@ -108,16 +110,24 @@ def get_my(iface):
 
 
 def enable_ip_forward():
+    """
+    Enables IP forwarding by writing '1' to /proc/sys/net/ipv4/ip_forward.
+    """
     try:
-        sp.Popen(['sysctl', '-w', 'net.ipv4.ip_forward=1'])
+        with open('/proc/sys/net/ipv4/ip_forward', 'w') as f:
+            f.write('1')
         logger.info('IP forward Enabled')
     except Exception as e:
         logger.error(sys.exc_info()[1], exc_info=True)
 
 
 def disable_ip_forward():
+    """
+    Disables IP forwarding by writing '0' to /proc/sys/net/ipv4/ip_forward.
+    """
     try:
-        sp.Popen(['sysctl', '-w', 'net.ipv4.ip_forward=0'])
+        with open('/proc/sys/net/ipv4/ip_forward', 'w') as f:
+            f.write('0')
         logger.info('IP Forward Disabled')
     except Exception as e:
         logger.error(sys.exc_info()[1], exc_info=True)

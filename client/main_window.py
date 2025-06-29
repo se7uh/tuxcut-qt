@@ -2,18 +2,16 @@ import os
 import sys
 import json
 import logging
-import subprocess
 from pathlib import Path
 import requests
-import time
 from threading import Thread
-from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QToolBar, 
-                            QStatusBar, QMessageBox, QInputDialog, QTreeWidget, 
+from PySide6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QToolBar,
+                            QStatusBar, QMessageBox, QInputDialog, QTreeWidget,
                             QTreeWidgetItem, QHeaderView, QMenuBar, QMenu,
                             QDialog, QLabel, QLineEdit, QPushButton, QHBoxLayout,
                             QSplitter, QTextEdit, QComboBox, QApplication)
-from PyQt6.QtCore import Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QAction
+from PySide6.QtCore import Qt, QThread, Signal as pyqtSignal
+from PySide6.QtGui import QAction
 from config import APP_NAME, ABOUT_TEXT
 
 APP_DIR = os.path.join(str(Path.home()), '.tuxcut')
@@ -30,41 +28,6 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
-class ServerThread(Thread):
-    def __init__(self):
-        super().__init__()
-        self.daemon = True
-        self.process = None
-    
-    def run(self):
-        try:
-            server_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'server', 'server')
-            if not os.path.exists(server_path):
-                # Jika tidak ada di development path, coba cari di installation path
-                server_path = '/opt/tuxcut-qt/server'
-            
-            # Jalankan server executable
-            self.process = subprocess.Popen(
-                [server_path],
-                stdout=sys.stdout,
-                stderr=sys.stderr,
-                bufsize=1,
-                universal_newlines=True
-            )
-            
-            # Log start server
-            print("\nStarting TuxCut Qt Server...")
-            
-        except Exception as e:
-            logger.error(f"Server error: {str(e)}")
-            print(f"\nError starting server: {str(e)}")
-    
-    def stop(self):
-        if self.process:
-            print("\nStopping TuxCut Qt Server...")
-            self.process.terminate()
-            self.process.wait()
-            print("Server stopped.")
 
 class ScanThread(QThread):
     finished = pyqtSignal(list)
@@ -123,9 +86,6 @@ class MainWindow(QMainWindow):
         if not self.ensure_root_access():
             sys.exit(1)
         
-        # Start server
-        self.server_thread = ServerThread()
-        self.start_server()
         
         # Initialize variables
         self.aliases_file = os.path.join(APP_DIR, 'aliases.json')
@@ -141,13 +101,10 @@ class MainWindow(QMainWindow):
         self.setup_toolbar()
         self.setup_statusbar()
         
-        # Wait for server to start
-        self.wait_for_server()
-        
         # Check server and initialize
         if not self.is_server():
             self.show_error('TuxCut Qt Server Error',
-                          'Could not start TuxCut Qt server. Check the logs for details.')
+                          'Could not connect to TuxCut Qt server. Please ensure the server is running.')
             self.close()
             return
             
@@ -187,23 +144,7 @@ class MainWindow(QMainWindow):
     def show_about(self):
         QMessageBox.about(self, f'About {APP_NAME}', ABOUT_TEXT)
     
-    def start_server(self):
-        self.server_thread = ServerThread()
-        self.server_thread.start()
     
-    def wait_for_server(self):
-        max_attempts = 5
-        attempt = 0
-        while attempt < max_attempts:
-            try:
-                requests.get('http://127.0.0.1:8013/status')
-                return
-            except:
-                attempt += 1
-                time.sleep(1)
-        
-        self.show_error('Server Error', 'Could not connect to TuxCut server')
-        self.close()
     
     def load_aliases(self):
         try:
@@ -422,9 +363,6 @@ class MainWindow(QMainWindow):
             # Simpan aliases
             self.save_aliases()
             
-            # Hentikan server
-            if hasattr(self, 'server_thread'):
-                self.server_thread.stop()
             
             # Pastikan aplikasi benar-benar tertutup
             self.deleteLater()
@@ -436,42 +374,14 @@ class MainWindow(QMainWindow):
         event.accept()
     
     def ensure_root_access(self):
+        # With the new execution method, root access is handled by the calling script (sudo python ...)
+        # This function is no longer needed for re-running the application with sudo.
+        # We only need to check if the current process has root privileges.
         if os.geteuid() == 0:
             return True
-            
-        dialog = SudoDialog(self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            password = dialog.password.text()
-            try:
-                # Rerun dengan sudo dan preserve environment untuk DISPLAY
-                current_script = os.path.abspath(sys.argv[0])
-                python_path = os.path.join(os.path.dirname(os.path.dirname(current_script)), '.venv', 'bin', 'python')
-                
-                env = os.environ.copy()
-                
-                cmd = ['sudo', '-E', python_path, current_script]
-                process = subprocess.Popen(
-                    cmd,
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    universal_newlines=True,
-                    env=env
-                )
-                
-                stdout, stderr = process.communicate(input=password + '\n')
-                
-                if process.returncode == 0:
-                    sys.exit(0)  # Exit karena aplikasi baru sudah berjalan
-                else:
-                    self.show_error("Authentication Failed", "Incorrect password")
-                    return False
-                    
-            except Exception as e:
-                logger.error(f"Failed to gain root access: {str(e)}")
-                self.show_error("Error", f"Failed to gain root access: {str(e)}")
-                return False
-        return False 
+        else:
+            self.show_error("Permission Denied", "TuxCut Qt requires root privileges to run. Please run the application with 'sudo'.")
+            return False
     
     def on_protection_changed(self, text):
         try:
