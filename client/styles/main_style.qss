@@ -1,0 +1,144 @@
+/* General Styles */
+QWidget {
+    background-color: #282c34; /* Primary Background */
+    color: #abb2bf; /* Text Color */
+    font-family: "Segoe UI", "Cantarell", "sans-serif";
+    font-size: 10pt;
+}
+
+/* QMainWindow */
+QMainWindow {
+    background-color: #282c34;
+}
+
+/* QToolBar */
+QToolBar {
+    background-color: #3e4451; /* Secondary Background */
+    border: none;
+    padding: 5px;
+}
+
+QToolBar QToolButton {
+    background-color: transparent;
+    border: none;
+    padding: 5px;
+    margin: 2px;
+    color: #abb2bf;
+}
+
+QToolBar QToolButton:hover {
+    background-color: #4b5263; /* Hover effect */
+    border-radius: 3px;
+}
+
+QToolBar QToolButton:pressed {
+    background-color: #5c6370; /* Pressed effect */
+}
+
+/* QStatusBar */
+QStatusBar {
+    background-color: #3e4451;
+    color: #abb2bf;
+    border-top: 1px solid #4b5263;
+}
+
+/* QTreeWidget (Hosts View) */
+QTreeWidget {
+    background-color: #282c34;
+    alternate-background-color: #2c313a; /* Slightly different background for rows */
+    border: 1px solid #4b5263;
+    selection-background-color: #61afef; /* Accent color for selection */
+    selection-color: #ffffff; /* White text on selection */
+    gridline-color: #4b5263;
+}
+
+QTreeWidget::item {
+    padding: 3px;
+}
+
+QTreeWidget::item:selected {
+    color: #ffffff;
+}
+
+QHeaderView::section {
+    background-color: #3e4451;
+    color: #abb2bf;
+    padding: 5px;
+    border: 1px solid #4b5263;
+    border-bottom: none;
+}
+
+/* QComboBox (Protection Mode) */
+QComboBox {
+    background-color: #3e4451;
+    border: 1px solid #4b5263;
+    border-radius: 3px;
+    padding: 3px 5px;
+    color: #abb2bf;
+}
+
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 20px;
+    border-left-width: 1px;
+    border-left-color: #4b5263;
+    border-left-style: solid;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+QComboBox::down-arrow {
+    image: url(./images/down_arrow.png); /* Placeholder for a custom arrow icon */
+}
+
+QComboBox QAbstractItemView {
+    background-color: #3e4451;
+    border: 1px solid #4b5263;
+    selection-background-color: #61afef;
+    color: #abb2bf;
+}
+
+/* QMessageBox (Dialogs) */
+QMessageBox {
+    background-color: #282c34;
+    color: #abb2bf;
+}
+
+QMessageBox QLabel {
+    color: #abb2bf;
+}
+
+QMessageBox QPushButton {
+    background-color: #61afef; /* Accent color for buttons */
+    color: #ffffff;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 3px;
+}
+
+QMessageBox QPushButton:hover {
+    background-color: #7aa2f7; /* Lighter accent on hover */
+}
+
+QMessageBox QPushButton:pressed {
+    background-color: #569cd6; /* Darker accent on pressed */
+}
+
+/* QLineEdit (for input dialogs) */
+QLineEdit {
+    background-color: #3e4451;
+    border: 1px solid #4b5263;
+    border-radius: 3px;
+    padding: 3px;
+    color: #abb2bf;
+}
+
+/* Specific colors for status/messages */
+.success-message {
+    color: #98c379; /* Green */
+}
+
+.error-message {
+    color: #e06c75; /* Red */
+}
